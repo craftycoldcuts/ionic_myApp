@@ -1,12 +1,19 @@
 <ion-header>
-  <ion-navbar>
-    <ion-title>BAIL</ion-title>
+  <ion-navbar wp-height=10>
+    <button ion-button (click)="showBail()">bail</button>
+    <button ion-button color="danger" (click)="showAlerts()">alerts</button>
   </ion-navbar>
 </ion-header>
 
-<ion-content padding>
-  <h3>Current Latitude: {{locationWatcher.lat}}</h3>
-  <h3>Current Longitude: {{locationWatcher.lng}}</h3>
+
+
+<ion-content>
+  <div id="map" style="width:100%; height:100%;"></div>
+</ion-content>
+
+<!-- <ion-content padding>
+  <p>Current Latitude: {{locationWatcher.lat}}</p>
+  <p>Current Longitude: {{locationWatcher.lng}}</p>
   <button ion-button full primary (click)="start()">Start Tracking</button>
   <button ion-button full primary (click)="stop()">Stop Tracking</button>
-</ion-content>
+ </ion-content> -->
