@@ -1,0 +1,18 @@
+{
+	"typeCd" : "1",
+	"typeCdDescription" : "bail addresses",
+	"creationTs": "2018-08-06 21:00:00",
+	"requestedTs": "2018-08-06 21:00:00",
+	"data": [
+		{
+			"latitude": "-41.218813",
+			"longitude": "174.910879",
+			"title": "test1"
+		},
+		{
+			"latitude": "-41.215472",
+			"longitude": "174.910879",
+			"title": "test1"
+		}
+	]
+}

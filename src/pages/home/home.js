@@ -9,17 +9,20 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import { NavController, Events } from 'ionic-angular';
-import { LocationWatcher } from '../../provider/location-watcher';
+import { LocationWatcher } from '../../providers/location-watcher/location-watcher';
 import * as leaflet from 'leaflet';
+import { BailDataProvider } from '../../providers/bail-data/bail-data';
 var HomePage = /** @class */ (function () {
-    function HomePage(navCtrl, locationWatcher, events) {
+    function HomePage(navCtrl, locationWatcher, events, bailDataProvider) {
         this.navCtrl = navCtrl;
         this.locationWatcher = locationWatcher;
         this.events = events;
+        this.bailDataProvider = bailDataProvider;
         this.bindEvents();
     }
     // runs when ion page loads
     HomePage.prototype.ionViewDidEnter = function () {
+        // search for location
         this.locationWatcher.startWatching();
     };
     HomePage.prototype.bindEvents = function () {
@@ -36,6 +39,7 @@ var HomePage = /** @class */ (function () {
         });
     };
     HomePage.prototype.loadmap = function (location) {
+        var context = this;
         var mapOptions = {
             zoomControl: false,
             zoom: 18,
@@ -51,6 +55,23 @@ var HomePage = /** @class */ (function () {
         this.map.zoomOut(2);
         leaflet.control.scale({ metric: true }).addTo(this.map);
         leaflet.marker([location.latitude, location.longitude]).addTo(this.map);
+        setTimeout(function () {
+            context.loadBailMarkers();
+        }, 0);
+    };
+    HomePage.prototype.loadBailMarkers = function () {
+        var _this = this;
+        // load remote bail data    
+        this.bailDataProvider.getLocalData().subscribe(function (data) {
+            var row;
+            _this.bailData = data;
+            for (var i = 0; i < _this.bailData.data.length; i++) {
+                row = _this.bailData.data[i];
+                console.log("LAT" + row.latitude);
+                console.log("LNG" + row.longitude);
+                leaflet.marker([row.latitude, row.longitude]).addTo(_this.map);
+            }
+        }, function (err) { return console.error(err); }, function () { return console.log('done loading bail checks'); });
     };
     // start watching location
     HomePage.prototype.start = function () {
@@ -76,7 +97,10 @@ var HomePage = /** @class */ (function () {
             selector: 'page-home',
             templateUrl: 'home.html'
         }),
-        __metadata("design:paramtypes", [NavController, LocationWatcher, Events])
+        __metadata("design:paramtypes", [NavController,
+            LocationWatcher,
+            Events,
+            BailDataProvider])
     ], HomePage);
     return HomePage;
     var _a;

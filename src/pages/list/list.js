@@ -13,6 +13,10 @@ var ListPage = /** @class */ (function () {
     function ListPage(navCtrl) {
         this.navCtrl = navCtrl;
     }
+    // runs when ion page loads
+    ListPage.prototype.ionViewDidEnter = function () {
+        console.log("hello");
+    };
     ListPage = __decorate([
         Component({
             selector: 'page-list',

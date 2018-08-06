@@ -1,24 +1,33 @@
 import {Component, ViewChild, ElementRef} from '@angular/core';
 import {NavController, Events} from 'ionic-angular';
-import {LocationWatcher} from '../../provider/location-watcher';
+import {LocationWatcher} from '../../providers/location-watcher/location-watcher';
 import * as leaflet from 'leaflet';
+import {BailDataProvider} from '../../providers/bail-data/bail-data';
+import {Observable} from 'rxjs';
 
 @Component({
   selector: 'page-home',
   templateUrl: 'home.html'
 })
+  
 export class HomePage {
   @ViewChild('map') mapContainer: ElementRef;
   map: any;
+  bailData: any;
   public locations;
 
-  constructor(public navCtrl: NavController, public locationWatcher: LocationWatcher, public events: Events) {
+  constructor(public navCtrl: NavController
+    ,public locationWatcher: LocationWatcher
+    ,public events: Events
+    ,public bailDataProvider: BailDataProvider
+  ) {
     this.bindEvents();
   }
 
   // runs when ion page loads
   ionViewDidEnter() {
-     this.locationWatcher.startWatching();
+    // search for location
+    this.locationWatcher.startWatching();
   }
 
   bindEvents() {
@@ -36,6 +45,7 @@ export class HomePage {
   }
 
   loadmap(location) {
+    var context = this;
     
     var mapOptions = {
       zoomControl: false,
@@ -56,6 +66,30 @@ export class HomePage {
  
     leaflet.marker([location.latitude, location.longitude]).addTo(this.map);
     
+    setTimeout(function() {
+    context.loadBailMarkers();  
+    }, 0);
+    
+    
+  }
+  
+  loadBailMarkers() {
+    // load remote bail data    
+    this.bailDataProvider.getLocalData().subscribe( data => { 
+      var row;
+      
+      this.bailData = data;
+      for (let i = 0; i < this.bailData.data.length; i++) {
+        row = this.bailData.data[i];
+        console.log("LAT" + row.latitude);
+        console.log("LNG" + row.longitude);
+        leaflet.marker([row.latitude, row.longitude]).addTo(this.map);
+      }
+     
+    },
+    err => console.error(err),
+    () => console.log('done loading bail checks')
+    );
   }
   
   // start watching location
