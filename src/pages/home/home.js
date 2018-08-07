@@ -18,6 +18,7 @@ var HomePage = /** @class */ (function () {
         this.locationWatcher = locationWatcher;
         this.events = events;
         this.bailDataProvider = bailDataProvider;
+        this.mapLoaded = false;
         this.bindEvents();
     }
     // runs when ion page loads
@@ -31,6 +32,9 @@ var HomePage = /** @class */ (function () {
             try {
                 console.log("Callback Location: " + location.latitude + ", " + location.longitude);
                 _this.loadmap(location);
+                if (_this.mapLoaded) {
+                    _this.markerMyPosition.setLatLng(location);
+                }
             }
             catch (e) {
                 console.error("Callback Location Error: " + e.message);
@@ -40,6 +44,9 @@ var HomePage = /** @class */ (function () {
     };
     HomePage.prototype.loadmap = function (location) {
         var context = this;
+        if (this.mapLoaded)
+            return false;
+        console.log("Loadmap: map loaded");
         var mapOptions = {
             zoomControl: false,
             zoom: 18,
@@ -54,24 +61,60 @@ var HomePage = /** @class */ (function () {
         // manipulate map
         this.map.zoomOut(2);
         leaflet.control.scale({ metric: true }).addTo(this.map);
-        leaflet.marker([location.latitude, location.longitude]).addTo(this.map);
-        setTimeout(function () {
-            context.loadBailMarkers();
-        }, 0);
+        this.mapLoaded = true;
+        // add markers
+        var myPositionPopup = leaflet.popup({ closeButton: false }).setContent("my current position");
+        this.markerMyPosition = leaflet.marker([location.latitude, location.longitude], {
+            icon: this.getLeafletIcon("me"),
+            title: "my current location"
+        }).bindPopup(myPositionPopup).addTo(this.map);
+        context.fetchBailData();
     };
-    HomePage.prototype.loadBailMarkers = function () {
+    HomePage.prototype.fetchBailData = function () {
         var _this = this;
         // load remote bail data    
         this.bailDataProvider.getLocalData().subscribe(function (data) {
-            var row;
             _this.bailData = data;
-            for (var i = 0; i < _this.bailData.data.length; i++) {
-                row = _this.bailData.data[i];
-                console.log("LAT" + row.latitude);
-                console.log("LNG" + row.longitude);
-                leaflet.marker([row.latitude, row.longitude]).addTo(_this.map);
-            }
         }, function (err) { return console.error(err); }, function () { return console.log('done loading bail checks'); });
+    };
+    HomePage.prototype.showBailMarkers = function () {
+        var row, bailMarker, bailPopup;
+        if (this.bailData.markersLoaded === true)
+            return;
+        this.bailData.markersLoaded = true;
+        for (var i = 0; i < this.bailData.data.length; i++) {
+            row = this.bailData.data[i];
+            console.log("Bail lat:" + row.latitude);
+            console.log("Bail lng" + row.longitude);
+            bailPopup = leaflet.popup({ closeButton: false }).setContent(row.title);
+            bailMarker = leaflet.marker([row.latitude, row.longitude], { icon: this.getLeafletIcon("bail") }).bindPopup(bailPopup);
+            bailMarker.addTo(this.map);
+        }
+    };
+    HomePage.prototype.getLeafletIcon = function (icon) {
+        var iconUrl;
+        var baseIconUrl = "../assets/icon/map/";
+        switch (icon) {
+            case "me":
+                iconUrl = baseIconUrl + "police.png";
+                break;
+            case "unit":
+                iconUrl = baseIconUrl + "car.png";
+                break;
+            case "bail":
+                iconUrl = baseIconUrl + "home.png";
+                break;
+            default:
+                iconUrl = baseIconUrl + "shooting.png";
+        }
+        return leaflet.icon({
+            iconUrl: iconUrl,
+            //      iconSize:     [38, 95], // size of the icon
+            //      shadowSize:   [50, 64], // size of the shadow
+            //      iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+            //      shadowAnchor: [4, 62],  // the same for the shadow
+            popupAnchor: [15, 0] // point from which the popup should open relative to the iconAnchor
+        });
     };
     // start watching location
     HomePage.prototype.start = function () {

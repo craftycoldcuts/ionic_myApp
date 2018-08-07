@@ -3,7 +3,6 @@ import {NavController, Events} from 'ionic-angular';
 import {LocationWatcher} from '../../providers/location-watcher/location-watcher';
 import * as leaflet from 'leaflet';
 import {BailDataProvider} from '../../providers/bail-data/bail-data';
-import {Observable} from 'rxjs';
 
 @Component({
   selector: 'page-home',
@@ -14,6 +13,8 @@ export class HomePage {
   @ViewChild('map') mapContainer: ElementRef;
   map: any;
   bailData: any;
+  markerMyPosition: any;
+  mapLoaded: boolean;
   public locations;
 
   constructor(public navCtrl: NavController
@@ -21,6 +22,7 @@ export class HomePage {
     ,public events: Events
     ,public bailDataProvider: BailDataProvider
   ) {
+    this.mapLoaded = false;
     this.bindEvents();
   }
 
@@ -36,6 +38,9 @@ export class HomePage {
         try {
           console.log("Callback Location: " + location.latitude + ", " + location.longitude);
           this.loadmap(location);
+          if (this.mapLoaded) {
+            this.markerMyPosition.setLatLng(location);
+          }
         } catch (e) {
           console.error("Callback Location Error: " + e.message);
 //          this.loadmap(this.defaultLocation);
@@ -46,6 +51,10 @@ export class HomePage {
 
   loadmap(location) {
     var context = this;
+    
+    if (this.mapLoaded) return false;
+    
+    console.log("Loadmap: map loaded");
     
     var mapOptions = {
       zoomControl: false,
@@ -63,33 +72,75 @@ export class HomePage {
     // manipulate map
     this.map.zoomOut(2);
     leaflet.control.scale({metric: true}).addTo(this.map);
+     this.mapLoaded = true;
  
-    leaflet.marker([location.latitude, location.longitude]).addTo(this.map);
+    // add markers
+    var myPositionPopup = leaflet.popup({closeButton: false}).setContent("my current position");
+    this.markerMyPosition = leaflet.marker([location.latitude, location.longitude],
+    {
+      icon: this.getLeafletIcon("me")
+      ,title: "my current location"
+    }).bindPopup(myPositionPopup).addTo(this.map);
     
-    setTimeout(function() {
-    context.loadBailMarkers();  
-    }, 0);
-    
+    context.fetchBailData();  
     
   }
   
-  loadBailMarkers() {
+  fetchBailData() {
     // load remote bail data    
     this.bailDataProvider.getLocalData().subscribe( data => { 
-      var row;
-      
       this.bailData = data;
-      for (let i = 0; i < this.bailData.data.length; i++) {
-        row = this.bailData.data[i];
-        console.log("LAT" + row.latitude);
-        console.log("LNG" + row.longitude);
-        leaflet.marker([row.latitude, row.longitude]).addTo(this.map);
-      }
-     
     },
     err => console.error(err),
     () => console.log('done loading bail checks')
     );
+  }
+  
+  showBailMarkers() {
+    var row, bailMarker, bailPopup;
+    if (this.bailData.markersLoaded === true) return;
+    this.bailData.markersLoaded = true;
+    
+    for (let i = 0; i < this.bailData.data.length; i++) {
+        row = this.bailData.data[i];
+        console.log("Bail lat:" + row.latitude);
+        console.log("Bail lng" + row.longitude);
+        bailPopup = leaflet.popup({closeButton: false}).setContent(row.title);
+        bailMarker = leaflet.marker([row.latitude, row.longitude], {icon: this.getLeafletIcon("bail")}).bindPopup(bailPopup)
+        bailMarker.addTo(this.map);
+      }
+  }
+  
+  getLeafletIcon(icon) {
+    
+    var iconUrl;
+    var baseIconUrl = "../assets/icon/map/";
+    
+    switch (icon) {
+     case "me":
+        iconUrl = baseIconUrl + "police.png";
+        break;
+    case"unit":
+        iconUrl = baseIconUrl + "car.png";
+        break;
+        
+    case"bail":
+        iconUrl = baseIconUrl + "home.png";
+        break;
+        
+    default:
+         iconUrl = baseIconUrl + "shooting.png";
+    }
+    
+    return leaflet.icon({
+      iconUrl: iconUrl,
+//      iconSize:     [38, 95], // size of the icon
+//      shadowSize:   [50, 64], // size of the shadow
+//      iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+//      shadowAnchor: [4, 62],  // the same for the shadow
+      popupAnchor:  [15, 0] // point from which the popup should open relative to the iconAnchor
+    });
+    
   }
   
   // start watching location

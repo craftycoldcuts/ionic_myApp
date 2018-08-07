@@ -7,22 +7,44 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { NavController } from 'ionic-angular';
+import { List } from 'ionic-angular';
+import { BailDataProvider } from '../../providers/bail-data/bail-data';
 var ListPage = /** @class */ (function () {
-    function ListPage(navCtrl) {
+    function ListPage(navCtrl, bailDataProvider) {
         this.navCtrl = navCtrl;
+        this.bailDataProvider = bailDataProvider;
+        this.fetchBailData();
     }
     // runs when ion page loads
     ListPage.prototype.ionViewDidEnter = function () {
         console.log("hello");
+        //      this.fetchBailData();  
     };
+    ListPage.prototype.itemSelected = function (item) {
+        console.log("Selected Item", item);
+    };
+    ListPage.prototype.fetchBailData = function () {
+        var _this = this;
+        // load remote bail data    
+        this.bailDataProvider.getLocalData().subscribe(function (mong) {
+            //      this.bailData = mong;
+            _this.bailData = mong["data"];
+            console.log("list1");
+        }, function (err) { return console.error(err); }, function () { return console.log('List: done loading bail checks'); });
+    };
+    __decorate([
+        ViewChild(List),
+        __metadata("design:type", List)
+    ], ListPage.prototype, "list", void 0);
     ListPage = __decorate([
         Component({
             selector: 'page-list',
             templateUrl: 'list.html'
         }),
-        __metadata("design:paramtypes", [NavController])
+        __metadata("design:paramtypes", [NavController,
+            BailDataProvider])
     ], ListPage);
     return ListPage;
 }());

@@ -7,12 +7,43 @@
 		{
 			"latitude": "-41.218813",
 			"longitude": "174.910879",
-			"title": "test1"
+			"title": "John Doe, curfew 20:00 - 07:00"
 		},
 		{
 			"latitude": "-41.215472",
 			"longitude": "174.910879",
-			"title": "test1"
+			"title": "John Doe, curfew 20:00 - 06:00"
+		},
+				{
+			"latitude": "-41.218213",
+			"longitude": "174.910279",
+			"title": "John Doe, curfew 20:00 - 06:00"
+		},
+		{
+			"latitude": "-41.215972",
+			"longitude": "174.910179",
+			"title": "John Doe, curfew 20:00 - 06:00"
+		},
+						{
+			"latitude": "-41.218913",
+			"longitude": "174.912279",
+			"title": "John Doe, curfew 20:00 - 06:00"
+		},
+		{
+			"latitude": "-41.214972",
+			"longitude": "174.910879",
+			"title": "John Doe, curfew 20:00 - 06:00"
+		},
+						{
+			"latitude": "-41.238213",
+			"longitude": "174.920279",
+			"title": "John Doe, curfew 20:00 - 06:00"
+		},
+		{
+			"latitude": "-41.285972",
+			"longitude": "174.916139",
+			"title": "John Doe, curfew 20:00 - 06:00"
 		}
+		
 	]
 }

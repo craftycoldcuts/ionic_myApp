@@ -1,11 +1,23 @@
 <ion-header>
-  <ion-navbar>
-    <ion-title>
-      List
-    </ion-title>
-  </ion-navbar>
+  <ion-toolbar>
+    <ion-segment>
+      <ion-segment-button value="bail">
+        bail
+      </ion-segment-button>
+      <ion-segment-button value="nearme">
+        locations
+      </ion-segment-button>
+      <ion-segment-button value="officers">
+        units
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
 </ion-header>
 
-<ion-content padding>
-
+<ion-content>
+<ion-list>
+  <button ion-item *ngFor="let bail of bailData" (click)="itemSelected(item)">
+    {{ bail.title }}
+  </button>  
+</ion-list>
 </ion-content>
